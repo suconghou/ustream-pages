@@ -10,6 +10,10 @@ const imageMap = {
   webp: "http://i.ytimg.com/vi_webp/",
 };
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 export async function onRequestGet(context) {
   const { params } = context;
   const [vid, ext] = params.vid.split(".");
