@@ -26,10 +26,10 @@ export async function onRequestGet(context) {
     return new Response("404 not found", { status: 404 });
   }
   const matches = ts.match(/(\d+-\d+)/);
-  return await videoPart(context, vid, itag, matches[1]);
+  return await videoPart(vid, itag, matches[1]);
 }
 
-const videoPart = async (context, vid, itag, part) => {
+const videoPart = async (vid, itag, part) => {
   const start = Date.now();
   const cacheKey = `${vid}/${itag}`;
   let cacheItem = get(cacheKey);
@@ -38,7 +38,7 @@ const videoPart = async (context, vid, itag, part) => {
       ...headers,
       "cache-control": `public,max-age=88888${Date.now() - start}`,
     };
-    return applyRequest(context, `${cacheItem.url}&range=${part}`, init, c);
+    return applyRequest(`${cacheItem.url}&range=${part}`, init, c);
   }
   try {
     cacheItem = await videoURLParse(vid, itag);
@@ -56,7 +56,7 @@ const videoPart = async (context, vid, itag, part) => {
     ...headers,
     "cache-control": `public,max-age=999${+new Date() - start}`,
   };
-  return applyRequest(context, `${cacheItem.url}&range=${matches[3]}`, init, c);
+  return applyRequest(`${cacheItem.url}&range=${matches[3]}`, init, c);
 };
 
 const videoURLParse = async (vid, itag) => {

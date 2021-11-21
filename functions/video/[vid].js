@@ -19,10 +19,10 @@ export async function onRequestGet(context) {
   if (ext == "json") {
     return await videoInfoParse(vid);
   }
-  return await videoImage(context, vid, ext);
+  return await videoImage(vid, ext);
 }
 
-const videoImage = async (context, vid, ext) => {
+const videoImage = async (vid, ext) => {
   const target = imageMap[ext] + vid + "/mqdefault." + ext;
   const headers = {
     Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
@@ -34,7 +34,7 @@ const videoImage = async (context, vid, ext) => {
     method: "GET",
     headers,
   };
-  return await applyRequest(context, target, init);
+  return await applyRequest(target, init);
 };
 
 const videoInfoParse = async (vid) => {

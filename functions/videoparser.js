@@ -35,13 +35,6 @@ const ajax = async (url) => {
     if (text) {
         return text;
     }
-    if (CACHE) {
-        text = await CACHE.get(url);
-        if (text) {
-            set(url, text);
-            return text;
-        }
-    }
     const init = {
         headers,
         method: 'GET',
@@ -54,22 +47,12 @@ const ajax = async (url) => {
     const r = await fetch(url, init);
     text = await r.text();
     set(url, text);
-    if (CACHE) {
-        await CACHE.put(url, text, { expirationTtl: url.substr(-2) === 'js' ? 86400 : 7200 });
-    }
     return text;
 };
 const doPost = async (url, body, cacheKey) => {
     let text = get(cacheKey);
     if (text) {
         return text;
-    }
-    if (CACHE) {
-        text = await CACHE.get(cacheKey);
-        if (text) {
-            set(cacheKey, text);
-            return text;
-        }
     }
     const init = {
         headers: headers_,
@@ -84,9 +67,6 @@ const doPost = async (url, body, cacheKey) => {
     const r = await fetch(url, init);
     text = await r.text();
     set(cacheKey, text);
-    if (CACHE) {
-        await CACHE.put(cacheKey, text, { expirationTtl: 7200 });
-    }
     return text;
 };
 

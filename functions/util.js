@@ -51,17 +51,12 @@ export const copyHeader = (status, headers = {}, head) => {
   return Object.assign(header, headers);
 };
 
-export const applyRequest = async (event, target, init = {}, headers = {}) => {
-  const cache = caches.default;
-  let response = await cache.match(event.request);
-  if (!response) {
-    response = await fetch(target, init);
-    response = new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: copyHeader(response.status, headers, response.headers),
-    });
-    event.waitUntil(cache.put(event.request, response.clone()));
-  }
+export const applyRequest = async (target, init = {}, headers = {}) => {
+  let response = await fetch(target, init);
+  response = new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: copyHeader(response.status, headers, response.headers),
+  });
   return response;
 };
