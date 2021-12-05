@@ -1,6 +1,11 @@
-const errorHandler = async ({ next }) => {
+const errorHandler = async ({ next, request, env }) => {
   try {
-    return await next();
+    const url = new URL(request.url);
+    const ext = url.pathname.split(".").pop();
+    if (ext.length >= 2 && ext.length <= 4) {
+      return await next();
+    }
+    return env.ASSETS.fetch(request);
   } catch (err) {
     return new Response(`${err.message}\n${err.stack}`, { status: 500 });
   }
