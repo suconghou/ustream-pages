@@ -163,10 +163,11 @@ class decipher {
 const baseURL = 'https://www.youtube.com';
 const store = new Map();
 class infoParser {
-    constructor(vid, fetch, doPost) {
+    constructor(vid, fetch, doPost,env) {
         this.vid = vid;
         this.fetch = fetch;
         this.doPost = doPost;
+        this.env = env;
         this.playerURL = "https://youtubei.googleapis.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
         this.videoPageURL = `${baseURL}/watch?v=${vid}`;
     }
@@ -189,14 +190,33 @@ class infoParser {
             }
         };
         const body = JSON.stringify(obj);
-        const res = await this.doPost(this.playerURL, body, this.vid);
+        let res;
+        if(this.env && this.env.CACHE){
+            // get cache
+            res = await this.env.CACHE.get(this.vid)
+        }
+        if(!res) {
+            res = await this.doPost(this.playerURL, body, this.vid);
+            if(res && this.env && this.env.CACHE){
+                // set cache
+                await this.env.CACHE.set(this.vid,res)
+            }
+        }
         const [videoDetails, streamingData] = this.extract(res);
         this.videoDetails = videoDetails;
         this.streamingData = streamingData;
     }
     async pageParse() {
-        let jsPath;
-        const text = await this.fetch(this.videoPageURL);
+        let jsPath,text;
+        if(this.env && this.env.CACHE){
+            text = await this.env.CACHE.get(this.videoPageURL);
+        }
+        if(!text) {
+            text = await this.fetch(this.videoPageURL);
+            if(text && this.env && this.env.CACHE){
+                await this.env.CACHE.set(this.videoPageURL,text)
+            }
+        }
         if (!text) {
             throw new Error("get page data failed");
         }
@@ -301,16 +321,17 @@ class infoParser {
     }
 }
 class parser {
-    constructor(vid, fetch, doPost) {
+    constructor(vid, fetch, doPost,env) {
         this.vid = vid;
         this.fetch = fetch;
         this.doPost = doPost;
+        this.env = env;
         if (!vid || typeof fetch != 'function' || typeof doPost != 'function') {
             throw new Error("invalid params");
         }
     }
     async initParser() {
-        const parser = new infoParser(this.vid, this.fetch, this.doPost);
+        const parser = new infoParser(this.vid, this.fetch, this.doPost,this.env);
         await parser.init();
         this.parser = parser;
     }
@@ -336,8 +357,8 @@ class parser {
 }
 
 class index extends parser {
-    constructor(vid) {
-        super(vid, ajax, doPost);
+    constructor(vid, env) {
+        super(vid, ajax, doPost, env);
     }
 }
 

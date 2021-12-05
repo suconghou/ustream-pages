@@ -15,13 +15,13 @@ const headers = {
 };
 
 export async function onRequestGet(context) {
-  const { params } = context;
+  const { params, env } = context;
   const [vid, ext] = params.vid.split(".");
   if (!/^[\w\-]{6,12}$/.test(vid) || !["jpg", "webp", "json"].includes(ext)) {
     return new Response("404 not found", { status: 404 });
   }
   if (ext == "json") {
-    return await videoInfoParse(vid);
+    return await videoInfoParse(vid, env);
   }
   return await videoImage(vid, ext);
 }
@@ -41,11 +41,11 @@ const videoImage = async (vid, ext) => {
   return await applyRequest(target, init);
 };
 
-const videoInfoParse = async (vid) => {
+const videoInfoParse = async (vid, env) => {
   const start = +new Date();
   let info = get(vid);
   if (!info) {
-    const parser = new videoParser(vid);
+    const parser = new videoParser(vid, env);
     info = await parser.info();
     set(vid, info);
   }

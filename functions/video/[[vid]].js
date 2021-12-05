@@ -15,7 +15,7 @@ const headers = {
 };
 
 export async function onRequestGet(context) {
-  const { params } = context;
+  const { params, env } = context;
 
   const [vid, itag, ts] = params.vid;
   if (
@@ -26,10 +26,10 @@ export async function onRequestGet(context) {
     return new Response("404 not found", { status: 404 });
   }
   const matches = ts.match(/(\d+-\d+)/);
-  return await videoPart(vid, itag, matches[1]);
+  return await videoPart(vid, itag, matches[1], env);
 }
 
-const videoPart = async (vid, itag, part) => {
+const videoPart = async (vid, itag, part, env) => {
   const start = Date.now();
   const cacheKey = `${vid}/${itag}`;
   let cacheItem = get(cacheKey);
@@ -41,7 +41,7 @@ const videoPart = async (vid, itag, part) => {
     return applyRequest(`${cacheItem.url}&range=${part}`, init, c);
   }
   try {
-    cacheItem = await videoURLParse(vid, itag);
+    cacheItem = await videoURLParse(vid, itag, env);
   } catch (e) {
     return new Response(
       JSON.stringify({ code: -1, msg: e.message || e.stack || e }),
@@ -59,8 +59,8 @@ const videoPart = async (vid, itag, part) => {
   return applyRequest(`${cacheItem.url}&range=${matches[3]}`, init, c);
 };
 
-const videoURLParse = async (vid, itag) => {
-  const parser = new videoParser(vid);
+const videoURLParse = async (vid, itag, env) => {
+  const parser = new videoParser(vid, env);
   const info = await parser.infoPart(itag);
   return info;
 };
