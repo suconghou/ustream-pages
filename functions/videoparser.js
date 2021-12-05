@@ -199,7 +199,7 @@ class infoParser {
             res = await this.doPost(this.playerURL, body, this.vid);
             if(res && this.env && this.env.CACHE){
                 // set cache
-                await this.env.CACHE.set(this.vid,res)
+                await this.env.CACHE.put(this.vid,res)
             }
         }
         const [videoDetails, streamingData] = this.extract(res);
@@ -214,7 +214,7 @@ class infoParser {
         if(!text) {
             text = await this.fetch(this.videoPageURL);
             if(text && this.env && this.env.CACHE){
-                await this.env.CACHE.set(this.videoPageURL,text)
+                await this.env.CACHE.put(this.videoPageURL,text)
             }
         }
         if (!text) {
